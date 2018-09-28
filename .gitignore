@@ -1,4 +1,4 @@
-dist/
+dist/*
 !dist/*.d.ts
 node_modules/
 .DS_Store
