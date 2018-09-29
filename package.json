@@ -9,7 +9,9 @@
   "typings": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "tslint --project .",
+    "test": "ava-ts",
+    "test:database": "docker run -e POSTGRES_DB=postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 --rm postgres:10.4-alpine",
+    "posttest": "tslint --project .",
     "prepare": "npm run build"
   },
   "keywords": [
@@ -32,12 +34,18 @@
     "@types/node": "^10.9.4",
     "@types/pg": "^7.4.10",
     "@types/pg-format": "^1.0.0",
+    "ava": "^0.25.0",
+    "ava-ts": "^0.25.2",
     "lint-staged": "^7.2.2",
     "pg": "^7.4.3",
     "prettier": "^1.14.2",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0",
     "typescript": "^3.0.3"
+  },
+  "ava": {
+    "serial": true
   },
   "prettier": {
     "semi": false,
