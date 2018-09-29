@@ -21,7 +21,7 @@
     "subscribe",
     "events"
   ],
-  "peerDepedencies": {
+  "peerDependencies": {
     "pg": "7.x"
   },
   "dependencies": {
