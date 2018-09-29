@@ -1,4 +1,4 @@
-# pg-listen - PostgreSQL LISTEN & NOTIFY that finally works
+# pg-listen - Postgres LISTEN & NOTIFY that works
 
 [![Build Status](https://travis-ci.org/andywer/pg-listen.svg?branch=master)](https://travis-ci.org/andywer/pg-listen) [![NPM Version](https://img.shields.io/npm/v/pg-listen.svg)](https://www.npmjs.com/package/pg-listen)
 
