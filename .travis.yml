@@ -1,0 +1,16 @@
+language: node_js
+
+node_js:
+  - 8
+  - node    # Latest
+
+sudo: required
+
+services:
+  - docker
+
+before_script:
+  - npm run test:database
+
+script:
+  - npm test
