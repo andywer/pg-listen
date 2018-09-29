@@ -1,5 +1,5 @@
 import pg from "pg";
-import { TypedEventEmitter } from "./event-emitter";
+import TypedEventEmitter from "typed-emitter";
 export interface PgParsedNotification {
     processId: number;
     channel: string;
@@ -7,7 +7,6 @@ export interface PgParsedNotification {
 }
 interface PgListenEvents {
     error: (error: Error) => void;
-    fatalError: (error: Error) => void;
     notification: (notification: PgParsedNotification) => void;
     reconnect: (attempt: number) => void;
 }
@@ -22,7 +21,7 @@ export interface Options {
     /**
      * Interval in ms to run a trivial query on the DB to see if
      * the database connection still works.
-     * Defaults to 60s.
+     * Defaults to 30s.
      */
     paranoidChecking?: number | false;
     /**
@@ -40,11 +39,13 @@ export interface Options {
      */
     retryTimeout?: number;
 }
-declare function createPostgresNotifier(connectionConfig?: pg.ConnectionConfig, options?: Options): {
-    /** Emits events: "error", "fatalError", "notification" & "redirect" */
+declare function createPostgresSubscriber(connectionConfig?: pg.ConnectionConfig, options?: Options): {
+    /** Emits events: "error", "notification" & "redirect" */
     events: TypedEventEmitter<PgListenEvents>;
     /** For convenience: Subscribe to distinct notifications here, event name = channel name */
     notifications: TypedEventEmitter<NotificationEvents>;
+    /** Don't forget to call this asyncronous method before doing your thing */
+    connect(): Promise<void>;
     close(): Promise<void>;
     getSubscribedChannels(): string[];
     listenTo(channelName: string): Promise<pg.QueryResult> | undefined;
@@ -52,4 +53,4 @@ declare function createPostgresNotifier(connectionConfig?: pg.ConnectionConfig, 
     unlisten(channelName: string): Promise<pg.QueryResult> | undefined;
     unlistenAll(): Promise<pg.QueryResult>;
 };
-export default createPostgresNotifier;
+export default createPostgresSubscriber;
