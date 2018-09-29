@@ -7,10 +7,7 @@ node_js:
 sudo: required
 
 services:
-  - docker
-
-before_script:
-  - npm run test:database
+  - postgresql
 
 script:
   - npm test
