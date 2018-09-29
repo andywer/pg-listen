@@ -15,7 +15,9 @@ Works with plain JavaScript and TypeScript 3.
 
 ## Why another package?
 
-Using the `NOTIFY` and `LISTEN` features is not quite trivial using [`node-postgres` (`pg`)](https://www.npmjs.com/package/pg), since you cannot use connection pools and also distinct client connections also tend to time out.
+In one sentence: Because none of the existing packages was working reliably in production.
+
+Using the `NOTIFY` and `LISTEN` features is not trivial using [`node-postgres` (`pg`)](https://www.npmjs.com/package/pg), since you cannot use connection pools and also distinct client connections also tend to time out.
 
 There are already a few packages out there, like `pg-pubsub`, but neither of them seems to work reliably. Errors are being swallowed, the code is hard to reason about, there is no type-safety, ...
 
@@ -26,7 +28,7 @@ This package aims to fix those shortcomings. Postgres LISTEN & NOTIFY in node th
 
 ```sh
 # using npm:
-npm install --save pg-listen
+npm install pg-listen
 
 # using yarn
 yarn add pg-listen:
