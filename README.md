@@ -17,7 +17,7 @@ Works with plain JavaScript and TypeScript 3.
 
 In one sentence: Because none of the existing packages was working reliably in production.
 
-Using the `NOTIFY` and `LISTEN` features is not trivial using [`node-postgres` (`pg`)](https://www.npmjs.com/package/pg), since you cannot use connection pools and also distinct client connections also tend to time out.
+Using the `NOTIFY` and `LISTEN` features is not trivial using [`node-postgres` (`pg`)](https://www.npmjs.com/package/pg), since you cannot use connection pools and even distinct client connections also tend to time out.
 
 There are already a few packages out there, like `pg-pubsub`, but neither of them seems to work reliably. Errors are being swallowed, the code is hard to reason about, there is no type-safety, ...
 
@@ -39,6 +39,7 @@ yarn add pg-listen:
 
 ```js
 import createPostgresSubscriber from "pg-listen"
+import { databaseURL } from "./config"
 
 const subscriber = createPostgresSubscriber({ connectionString: databaseURL })
 
@@ -46,11 +47,17 @@ subscriber.notifications.on("my-channel", (payload) => {
   console.log("Received notification in 'my-channel':", payload)
 })
 
+subscriber.events.on("error", (error) => {
+  // Usually triggered if reconnection attempts have failed repeatedly
+  console.error("Fatal database connection error:", error)
+  process.exit(1)
+})
+
 process.on("exit", () => {
   subscriber.close()
 })
 
-export async function setUp (databaseURL) {
+export async function connect () {
   await subscriber.connect()
   await subscriber.listenTo("my-channel")
 }
