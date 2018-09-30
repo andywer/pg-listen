@@ -89,6 +89,10 @@ A more convenient way of subscribing to notifications is the `instance.notificat
 
 Emitted when a connection issue has been detected and an attempt to re-connect to the database is started.
 
+### `instance.notifications.on(channelName: string, listener: (payload: any) => void)`
+
+The convenient way of subscribing to notifications. Don't forget to call `.listenTo(channelName)` to subscribe the Postgres client to this channel in order to receive notifications.
+
 
 ## Debugging
 
