@@ -222,6 +222,7 @@ function createPostgresSubscriber (connectionConfig?: pg.ConnectionConfig, optio
     close () {
       connectionLogger("Closing PostgreSQL notification listener.")
       closing = true
+      cancelParanoidChecking()
       return dbClient.end()
     },
     getSubscribedChannels () {
