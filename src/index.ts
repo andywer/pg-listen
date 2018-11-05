@@ -63,11 +63,11 @@ export interface Options {
   retryTimeout?: number
 }
 
-function connect (connectionConfig: pg.ConnectionConfig | undefined, options: Options) {
+function connect (connectionConfig: pg.ClientConfig | undefined, options: Options) {
   connectionLogger("Creating PostgreSQL client for notification streaming")
 
   const { retryInterval = 500, retryLimit = Infinity, retryTimeout = 3000 } = options
-  const effectiveConnectionConfig: pg.ConnectionConfig = { ...connectionConfig, keepAlive: true }
+  const effectiveConnectionConfig: pg.ClientConfig = { ...connectionConfig, keepAlive: true }
 
   const Client = options.native && pg.native ? pg.native.Client : pg.Client
   const dbClient = new Client(effectiveConnectionConfig)
@@ -145,7 +145,7 @@ function scheduleParanoidChecking (dbClient: pg.Client, intervalTime: number, re
   }
 }
 
-function createPostgresSubscriber (connectionConfig?: pg.ConnectionConfig, options: Options = {}) {
+function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: Options = {}) {
   const { paranoidChecking = 30000 } = options
 
   const emitter = new EventEmitter() as TypedEventEmitter<PgListenEvents>
