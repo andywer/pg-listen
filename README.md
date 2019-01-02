@@ -41,6 +41,7 @@ yarn add pg-listen:
 import createPostgresSubscriber from "pg-listen"
 import { databaseURL } from "./config"
 
+// createPostgresSubscriber() accepts the same connection config object that "pg" would take
 const subscriber = createPostgresSubscriber({ connectionString: databaseURL })
 
 subscriber.notifications.on("my-channel", (payload) => {
