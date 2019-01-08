@@ -2,15 +2,21 @@
 
 [![Build Status](https://travis-ci.org/andywer/pg-listen.svg?branch=master)](https://travis-ci.org/andywer/pg-listen) [![NPM Version](https://img.shields.io/npm/v/pg-listen.svg)](https://www.npmjs.com/package/pg-listen)
 
-PostgreSQL can act as a simple message broker. Send notifications with an arbitrary payload from one database client to other clients, using [`NOTIFY`](https://www.postgresql.org/docs/10/static/sql-notify.html) and subscribe to notifications using [`LISTEN`](https://www.postgresql.org/docs/10/static/sql-listen.html).
+PostgreSQL can act as a simple message broker. Send notifications with an arbitrary payload from one database client to other clients using [`NOTIFY`](https://www.postgresql.org/docs/10/static/sql-notify.html) and subscribe to notifications using [`LISTEN`](https://www.postgresql.org/docs/10/static/sql-listen.html).
 
-Works with plain JavaScript and TypeScript 3.
+Works with node.js 8+ and plain JavaScript or TypeScript 3.
 
-- Send notifications and subscribe to them
-- Continuous connection health checking
-- Customizable auto-reconnecting
-- Proper error handling
-- Type-safe code (TypeScript 3.0)
+#### Features
+
+&nbsp;&nbsp;📡&nbsp;&nbsp;Send notifications and subscribe to them
+
+&nbsp;&nbsp;⏳&nbsp;&nbsp;Continuous connection health checking
+
+&nbsp;&nbsp;♻️&nbsp;&nbsp;Customizable auto-reconnecting
+
+&nbsp;&nbsp;❗️&nbsp;&nbsp;Proper error handling
+
+&nbsp;&nbsp;👌&nbsp;&nbsp;Type-safe API (TypeScript 3.0)
 
 
 ## Why another package?
@@ -30,8 +36,8 @@ This package aims to fix those shortcomings. Postgres LISTEN & NOTIFY in node th
 # using npm:
 npm install pg-listen
 
-# using yarn
-yarn add pg-listen:
+# using yarn:
+yarn add pg-listen
 ```
 
 
