@@ -39,7 +39,7 @@ export interface Options {
      */
     retryTimeout?: number;
 }
-declare function createPostgresSubscriber(connectionConfig?: pg.ConnectionConfig, options?: Options): {
+declare function createPostgresSubscriber(connectionConfig?: pg.ClientConfig, options?: Options): {
     /** Emits events: "error", "notification" & "redirect" */
     events: TypedEventEmitter<PgListenEvents>;
     /** For convenience: Subscribe to distinct notifications here, event name = channel name */
