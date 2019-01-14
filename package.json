@@ -45,7 +45,8 @@
     "typescript": "^3.0.3"
   },
   "files": [
-    "dist/**"
+    "dist/**",
+    "index.js"
   ],
   "ava": {
     "serial": true
