@@ -1,6 +1,6 @@
 import createDebugLogger from "debug"
 import EventEmitter from "events"
-import pg from "pg"
+import * as pg from "pg"
 import format from "pg-format"
 import TypedEventEmitter from "typed-emitter"
 

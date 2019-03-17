@@ -1,4 +1,4 @@
-import pg from "pg";
+import * as pg from "pg";
 import TypedEventEmitter from "typed-emitter";
 export interface PgParsedNotification {
     processId: number;
