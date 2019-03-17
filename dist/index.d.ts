@@ -39,7 +39,7 @@ export interface Options {
      */
     retryTimeout?: number;
 }
-declare function createPostgresSubscriber(connectionConfig?: pg.ClientConfig, options?: Options): {
+export interface Subscriber {
     /** Emits events: "error", "notification" & "redirect" */
     events: TypedEventEmitter<PgListenEvents>;
     /** For convenience: Subscribe to distinct notifications here, event name = channel name */
@@ -52,5 +52,6 @@ declare function createPostgresSubscriber(connectionConfig?: pg.ClientConfig, op
     notify(channelName: string, payload: any): Promise<pg.QueryResult>;
     unlisten(channelName: string): Promise<pg.QueryResult> | undefined;
     unlistenAll(): Promise<pg.QueryResult>;
-};
+}
+declare function createPostgresSubscriber(connectionConfig?: pg.ClientConfig, options?: Options): Subscriber;
 export default createPostgresSubscriber;
