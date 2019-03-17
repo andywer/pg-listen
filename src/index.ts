@@ -1,6 +1,6 @@
 import createDebugLogger from "debug"
 import EventEmitter from "events"
-import pg from "pg"
+import * as pg from "pg"
 import format from "pg-format"
 import TypedEventEmitter from "typed-emitter"
 
@@ -145,7 +145,22 @@ function scheduleParanoidChecking (dbClient: pg.Client, intervalTime: number, re
   }
 }
 
-function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: Options = {}) {
+export interface Subscriber {
+    /** Emits events: "error", "notification" & "redirect" */
+    events: TypedEventEmitter<PgListenEvents>;
+    /** For convenience: Subscribe to distinct notifications here, event name = channel name */
+    notifications: TypedEventEmitter<NotificationEvents>;
+    /** Don't forget to call this asyncronous method before doing your thing */
+    connect(): Promise<void>;
+    close(): Promise<void>;
+    getSubscribedChannels(): string[];
+    listenTo(channelName: string): Promise<pg.QueryResult> | undefined;
+    notify(channelName: string, payload: any): Promise<pg.QueryResult>;
+    unlisten(channelName: string): Promise<pg.QueryResult> | undefined;
+    unlistenAll(): Promise<pg.QueryResult>;
+}
+
+function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: Options = {}): Subscriber {
   const { paranoidChecking = 30000 } = options
 
   const emitter = new EventEmitter() as TypedEventEmitter<PgListenEvents>
