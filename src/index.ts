@@ -216,6 +216,7 @@ function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: 
       ))
     } catch (error) {
       error.message = `Re-initializing the PostgreSQL notification client after connection loss failed: ${error.message}`
+      connectionLogger(error.stack || error)
       emitter.emit("error", error)
     }
   }
