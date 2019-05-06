@@ -1,8 +1,10 @@
 import createDebugLogger from "debug"
 import EventEmitter from "events"
-import * as pg from "pg"
 import format from "pg-format"
 import TypedEventEmitter from "typed-emitter"
+
+// Need to require `pg` like this to avoid ugly error message (see #15)
+import pg = require("pg")
 
 const connectionLogger = createDebugLogger("pg-listen:connection")
 const notificationLogger = createDebugLogger("pg-listen:notification")
