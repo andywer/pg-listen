@@ -47,7 +47,41 @@ test("can listen and notify", async t => {
   }
 })
 
-test("getting notified after connection is terminated", async t => {
+test("can use custom `parse` function", async t => {
+  const notifications: PgParsedNotification[] = []
+  const receivedPayloads: any[] = []
+
+  const connectionString = "postgres://postgres:postgres@localhost:5432/postgres"
+
+  const hub = createPostgresSubscriber(
+    { connectionString },
+    { parse: (base64: string) => Buffer.from(base64, "base64").toString("utf8") }
+  )
+  await hub.connect()
+
+  let client = new pg.Client({ connectionString })
+  await client.connect()
+
+  try {
+    await hub.listenTo("test")
+    await hub.events.on("notification", (notification: PgParsedNotification) => notifications.push(notification))
+
+    await client.query(`NOTIFY test, '${Buffer.from("I am a payload.", "utf8").toString("base64")}'`)
+    await delay(200)
+
+    t.deepEqual(notifications, [
+      {
+        channel: "test",
+        payload: "I am a payload.",
+        processId: notifications[0].processId
+      }
+    ])
+  } finally {
+    await hub.close()
+  }
+})
+
+test.serial("getting notified after connection is terminated", async t => {
   const notifications: PgParsedNotification[] = []
   const receivedPayloads: any[] = []
   let reconnects = 0
