@@ -64,6 +64,18 @@ export interface Options {
    * Timeout in ms after which to stop retrying and just fail. Defaults to 3000 ms.
    */
   retryTimeout?: number
+
+  /**
+   * Custom function to control how the payload data is stringified on `.notify()`.
+   * Use together with the `serialize` option. Defaults to `JSON.parse`.
+   */
+  parse?: (serialized: string) => any
+
+  /**
+   * Custom function to control how the payload data is stringified on `.notify()`.
+   * Use together with the `parse` option. Defaults to `JSON.stringify`.
+   */
+  serialize?: (data: any) => string
 }
 
 function connect (connectionConfig: pg.ClientConfig | undefined, options: Options) {
@@ -113,13 +125,13 @@ function connect (connectionConfig: pg.ClientConfig | undefined, options: Option
   }
 }
 
-function forwardDBNotificationEvents (dbClient: pg.Client, emitter: TypedEventEmitter<PgListenEvents>) {
+function forwardDBNotificationEvents (dbClient: pg.Client, emitter: TypedEventEmitter<PgListenEvents>, parse: (stringifiedData: string) => any) {
   const onNotification = (notification: PgNotification) => {
     notificationLogger(`Received PostgreSQL notification on "${notification.channel}":`, notification.payload)
 
     let payload
     try {
-      payload = notification.payload ? JSON.parse(notification.payload) : notification.payload
+      payload = notification.payload !== undefined ? parse(notification.payload) : undefined
     } catch (error) {
       error.message = `Error parsing PostgreSQL notification payload: ${error.message}`
       return emitter.emit("error", error)
@@ -173,7 +185,11 @@ export interface Subscriber {
 }
 
 function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: Options = {}): Subscriber {
-  const { paranoidChecking = 30000 } = options
+  const {
+    paranoidChecking = 30000,
+    parse = JSON.parse,
+    serialize = JSON.stringify
+  } = options
 
   const emitter = new EventEmitter() as TypedEventEmitter<PgListenEvents>
   emitter.setMaxListeners(0)    // unlimited listeners
@@ -197,7 +213,7 @@ function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: 
 
   const initialize = (client: pg.Client) => {
     // Wire the DB client events to our exposed emitter's events
-    cancelEventForwarding = forwardDBNotificationEvents(client, emitter)
+    cancelEventForwarding = forwardDBNotificationEvents(client, emitter, parse)
 
     dbClient.on("error", (error: any) => {
       if (!reinitializingRightNow) {
@@ -282,7 +298,8 @@ function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: 
     },
     notify (channelName: string, payload: any) {
       notificationLogger(`Sending PostgreSQL notification to "${channelName}":`, payload)
-      return dbClient.query(`NOTIFY ${format.ident(channelName)}, ${format.literal(JSON.stringify(payload))}`)
+      const serialized = serialize(payload)
+      return dbClient.query(`NOTIFY ${format.ident(channelName)}, ${format.literal(serialized)}`)
     },
     unlisten (channelName: string) {
       if (subscribedChannels.indexOf(channelName) === -1) {
