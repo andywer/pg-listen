@@ -1,6 +1,6 @@
 {
   "name": "pg-listen",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "license": "MIT",
   "description": "PostgreSQL LISTEN &  NOTIFY that finally works.",
   "author": "Andy Wermke (https://github.com/andywer)",
