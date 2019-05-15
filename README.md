@@ -76,23 +76,23 @@ For details see [dist/index.d.ts](./dist/index.d.ts).
 
 ## Error & event handling
 
-### `instance.events.on("error", listener: (error: Error) => void)`
+#### `instance.events.on("error", listener: (error: Error) => void)`
 
 An `error` event is emitted for fatal errors that affect the notification subscription. A standard way of handling those kinds of errors would be to `console.error()`-log the error and terminate the process with a non-zero exit code.
 
 This `error` event is usually emitted after multiple attempts to reconnect have failed.
 
-### `instance.events.on("notification", listener: ({ channel, payload }) => void)`
+#### `instance.events.on("notification", listener: ({ channel, payload }) => void)`
 
 Emitted whenever a notification is received. You must have subscribed to that channel before using `instance.listenTo()` in order to receive notifications.
 
 A more convenient way of subscribing to notifications is the `instance.notifications` event emitter.
 
-### `instance.events.on("reconnect", listener: (attempt: number) => void)`
+#### `instance.events.on("reconnect", listener: (attempt: number) => void)`
 
 Emitted when a connection issue has been detected and an attempt to re-connect to the database is started.
 
-### `instance.notifications.on(channelName: string, listener: (payload: any) => void)`
+#### `instance.notifications.on(channelName: string, listener: (payload: any) => void)`
 
 The convenient way of subscribing to notifications. Don't forget to call `.listenTo(channelName)` to subscribe the Postgres client to this channel in order to receive notifications.
 
