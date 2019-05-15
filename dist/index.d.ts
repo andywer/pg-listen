@@ -1,5 +1,5 @@
-import * as pg from "pg";
 import TypedEventEmitter from "typed-emitter";
+import pg = require("pg");
 export interface PgParsedNotification {
     processId: number;
     channel: string;

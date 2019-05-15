@@ -8,6 +8,7 @@ import pg = require("pg")
 
 const connectionLogger = createDebugLogger("pg-listen:connection")
 const notificationLogger = createDebugLogger("pg-listen:notification")
+const paranoidLogger = createDebugLogger("pg-listen:paranoid")
 const subscriptionLogger = createDebugLogger("pg-listen:subscription")
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
@@ -84,7 +85,14 @@ function connect (connectionConfig: pg.ClientConfig | undefined, options: Option
 
       try {
         const newClient = new Client(effectiveConnectionConfig)
+        const connecting = new Promise((resolve, reject) => {
+          newClient.once("connect", resolve)
+          newClient.once("end", () => reject(Error("Connection ended.")))
+          newClient.once("error", reject)
+        })
         await newClient.connect()
+        await connecting
+        connectionLogger("PostgreSQL reconnection succeeded")
         return newClient
       } catch (error) {
         connectionLogger("PostgreSQL reconnection attempt failed:", error)
@@ -133,8 +141,10 @@ function forwardDBNotificationEvents (dbClient: pg.Client, emitter: TypedEventEm
 function scheduleParanoidChecking (dbClient: pg.Client, intervalTime: number, reconnect: () => Promise<void>) {
   const scheduledCheck = async () => {
     try {
-      await dbClient.query("SELECT 1")
+      await dbClient.query("SELECT pg_backend_pid()")
+      paranoidLogger("Paranoid connection check ok")
     } catch (error) {
+      paranoidLogger("Paranoid connection check failed")
       connectionLogger("Paranoid connection check failed:", error)
       await reconnect()
     }
@@ -179,22 +189,25 @@ function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: 
 
   let closing = false
   let dbClient = initialDBClient
+  let reinitializingRightNow = false
   let subscribedChannels: string[] = []
 
   let cancelEventForwarding: () => void = () => undefined
   let cancelParanoidChecking: () => void = () => undefined
 
-  const initialize = async (client: pg.Client) => {
+  const initialize = (client: pg.Client) => {
     // Wire the DB client events to our exposed emitter's events
     cancelEventForwarding = forwardDBNotificationEvents(client, emitter)
 
     dbClient.on("error", (error: any) => {
-      connectionLogger("DB Client error:", error)
-      reinitialize()
+      if (!reinitializingRightNow) {
+        connectionLogger("DB Client error:", error)
+        reinitialize()
+      }
     })
     dbClient.on("end", () => {
-      connectionLogger("DB Client connection ended")
-      if (!closing) {
+      if (!reinitializingRightNow) {
+        connectionLogger("DB Client connection ended")
         reinitialize()
       }
     })
@@ -206,20 +219,32 @@ function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: 
 
   // No need to handle errors when calling `reinitialize()`, it handles its errors itself
   const reinitialize = async () => {
+    if (reinitializingRightNow || closing) {
+      return
+    }
+    reinitializingRightNow = true
+
     try {
       cancelParanoidChecking()
       cancelEventForwarding()
 
-      dbClient = await reconnect(attempt => emitter.emit("reconnect", attempt))
-      await initialize(dbClient)
+      dbClient.removeAllListeners()
+      dbClient.once("error", error => connectionLogger(`Previous DB client errored after reconnecting already:`, error))
+      dbClient.end()
 
+      dbClient = await reconnect(attempt => emitter.emit("reconnect", attempt))
+      initialize(dbClient)
+
+      subscriptionLogger(`Re-subscribing to channels: ${subscribedChannels.join(", ")}`)
       await Promise.all(subscribedChannels.map(
-        channelName => `LISTEN ${format.ident(channelName)}`
+        channelName => dbClient.query(`LISTEN ${format.ident(channelName)}`)
       ))
     } catch (error) {
       error.message = `Re-initializing the PostgreSQL notification client after connection loss failed: ${error.message}`
       connectionLogger(error.stack || error)
       emitter.emit("error", error)
+    } finally {
+      reinitializingRightNow = false
     }
   }
 
