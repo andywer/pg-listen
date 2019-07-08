@@ -38,6 +38,16 @@ export interface Options {
      * Timeout in ms after which to stop retrying and just fail. Defaults to 3000 ms.
      */
     retryTimeout?: number;
+    /**
+     * Custom function to control how the payload data is stringified on `.notify()`.
+     * Use together with the `serialize` option. Defaults to `JSON.parse`.
+     */
+    parse?: (serialized: string) => any;
+    /**
+     * Custom function to control how the payload data is stringified on `.notify()`.
+     * Use together with the `parse` option. Defaults to `JSON.stringify`.
+     */
+    serialize?: (data: any) => string;
 }
 export interface Subscriber {
     /** Emits events: "error", "notification" & "redirect" */

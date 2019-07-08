@@ -102,8 +102,10 @@ function connect (connectionConfig: pg.ClientConfig | undefined, options: Option
           newClient.once("end", () => reject(Error("Connection ended.")))
           newClient.once("error", reject)
         })
-        await newClient.connect()
-        await connecting
+        await Promise.all([
+          newClient.connect(),
+          connecting
+        ])
         connectionLogger("PostgreSQL reconnection succeeded")
         return newClient
       } catch (error) {
