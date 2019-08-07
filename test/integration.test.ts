@@ -47,9 +47,37 @@ test("can listen and notify", async t => {
   }
 })
 
-test("can use custom `parse` function", async t => {
+test("can handle notification without payload", async t => {
   const notifications: PgParsedNotification[] = []
   const receivedPayloads: any[] = []
+
+  const hub = createPostgresSubscriber({ connectionString: "postgres://postgres:postgres@localhost:5432/postgres" })
+  await hub.connect()
+
+  try {
+    await hub.listenTo("test")
+    await hub.events.on("notification", (notification: PgParsedNotification) => notifications.push(notification))
+    await hub.notifications.on("test", (payload: any) => receivedPayloads.push(payload))
+
+    await hub.notify("test")
+    await delay(200)
+
+    t.deepEqual(hub.getSubscribedChannels(), ["test"])
+    t.deepEqual(notifications, [
+      {
+        channel: "test",
+        payload: undefined,
+        processId: notifications[0].processId
+      }
+    ])
+    t.deepEqual(receivedPayloads, [undefined])
+  } finally {
+    await hub.close()
+  }
+})
+
+test("can use custom `parse` function", async t => {
+  const notifications: PgParsedNotification[] = []
 
   const connectionString = "postgres://postgres:postgres@localhost:5432/postgres"
 
