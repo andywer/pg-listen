@@ -59,7 +59,7 @@ export interface Subscriber {
     close(): Promise<void>;
     getSubscribedChannels(): string[];
     listenTo(channelName: string): Promise<pg.QueryResult> | undefined;
-    notify(channelName: string, payload: any): Promise<pg.QueryResult>;
+    notify(channelName: string, payload?: any): Promise<pg.QueryResult>;
     unlisten(channelName: string): Promise<pg.QueryResult> | undefined;
     unlistenAll(): Promise<pg.QueryResult>;
 }
