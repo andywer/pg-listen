@@ -133,7 +133,7 @@ function forwardDBNotificationEvents (dbClient: pg.Client, emitter: TypedEventEm
 
     let payload
     try {
-      payload = notification.payload !== undefined ? parse(notification.payload) : undefined
+      payload = notification.payload ? parse(notification.payload) : undefined
     } catch (error) {
       error.message = `Error parsing PostgreSQL notification payload: ${error.message}`
       return emitter.emit("error", error)
@@ -181,7 +181,7 @@ export interface Subscriber {
     close(): Promise<void>;
     getSubscribedChannels(): string[];
     listenTo(channelName: string): Promise<pg.QueryResult> | undefined;
-    notify(channelName: string, payload: any): Promise<pg.QueryResult>;
+    notify(channelName: string, payload?: any): Promise<pg.QueryResult>;
     unlisten(channelName: string): Promise<pg.QueryResult> | undefined;
     unlistenAll(): Promise<pg.QueryResult>;
 }
@@ -298,10 +298,15 @@ function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: 
       subscribedChannels = [ ...subscribedChannels, channelName ]
       return dbClient.query(`LISTEN ${format.ident(channelName)}`)
     },
-    notify (channelName: string, payload: any) {
+    notify (channelName: string, payload?: any) {
       notificationLogger(`Sending PostgreSQL notification to "${channelName}":`, payload)
-      const serialized = serialize(payload)
-      return dbClient.query(`NOTIFY ${format.ident(channelName)}, ${format.literal(serialized)}`)
+
+      if (payload !== undefined) {
+        const serialized = serialize(payload)
+        return dbClient.query(`NOTIFY ${format.ident(channelName)}, ${format.literal(serialized)}`)
+      } else {
+        return dbClient.query(`NOTIFY ${format.ident(channelName)}`)
+      }
     },
     unlisten (channelName: string) {
       if (subscribedChannels.indexOf(channelName) === -1) {
