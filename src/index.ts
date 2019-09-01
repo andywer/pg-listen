@@ -88,8 +88,6 @@ function connect(connectionConfig: pg.ClientConfig | undefined, emitter: TypedEv
   const Client = options.native && pg.native ? pg.native.Client : pg.Client
   const dbClient = new Client(effectiveConnectionConfig)
 
-  dbClient.once("connect", () => emitter.emit("connected"))
-
   const reconnect = async (onAttempt: (attempt: number) => void): Promise<pg.Client> => {
     connectionLogger("Reconnecting to PostgreSQL for notification streaming")
     const startTime = Date.now()
@@ -110,7 +108,6 @@ function connect(connectionConfig: pg.ClientConfig | undefined, emitter: TypedEv
           connecting
         ])
         connectionLogger("PostgreSQL reconnection succeeded")
-        emitter.emit("connected")
         return newClient
       } catch (error) {
         connectionLogger("PostgreSQL reconnection attempt failed:", error)
@@ -261,6 +258,8 @@ function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: 
       await Promise.all(subscribedChannels.map(
         channelName => dbClient.query(`LISTEN ${format.ident(channelName)}`)
       ))
+
+      emitter.emit("connected")
     } catch (error) {
       error.message = `Re-initializing the PostgreSQL notification client after connection loss failed: ${error.message}`
       connectionLogger(error.stack || error)
@@ -280,9 +279,10 @@ function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: 
     notifications: notificationsEmitter,
 
     /** Don't forget to call this asyncronous method before doing your thing */
-    connect () {
+    async connect () {
       initialize(dbClient)
-      return dbClient.connect()
+      await dbClient.connect()
+      emitter.emit("connected")
     },
     close () {
       connectionLogger("Closing PostgreSQL notification listener.")

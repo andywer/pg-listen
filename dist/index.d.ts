@@ -6,6 +6,7 @@ export interface PgParsedNotification {
     payload?: any;
 }
 interface PgListenEvents {
+    connected: () => void;
     error: (error: Error) => void;
     notification: (notification: PgParsedNotification) => void;
     reconnect: (attempt: number) => void;
