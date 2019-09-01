@@ -26,6 +26,7 @@ export interface PgParsedNotification {
 }
 
 interface PgListenEvents {
+  connected: () => void,
   error: (error: Error) => void,
   notification: (notification: PgParsedNotification) => void,
   reconnect: (attempt: number) => void
@@ -78,7 +79,7 @@ export interface Options {
   serialize?: (data: any) => string
 }
 
-function connect (connectionConfig: pg.ClientConfig | undefined, options: Options) {
+function connect(connectionConfig: pg.ClientConfig | undefined, emitter: TypedEventEmitter<PgListenEvents>, options: Options) {
   connectionLogger("Creating PostgreSQL client for notification streaming")
 
   const { retryInterval = 500, retryLimit = Infinity, retryTimeout = 3000 } = options
@@ -203,7 +204,7 @@ function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: 
     notificationsEmitter.emit(notification.channel, notification.payload)
   })
 
-  const { dbClient: initialDBClient, reconnect } = connect(connectionConfig, options)
+  const { dbClient: initialDBClient, reconnect } = connect(connectionConfig, emitter, options)
 
   let closing = false
   let dbClient = initialDBClient
@@ -257,6 +258,8 @@ function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: 
       await Promise.all(subscribedChannels.map(
         channelName => dbClient.query(`LISTEN ${format.ident(channelName)}`)
       ))
+
+      emitter.emit("connected")
     } catch (error) {
       error.message = `Re-initializing the PostgreSQL notification client after connection loss failed: ${error.message}`
       connectionLogger(error.stack || error)
@@ -276,9 +279,10 @@ function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: 
     notifications: notificationsEmitter,
 
     /** Don't forget to call this asyncronous method before doing your thing */
-    connect () {
+    async connect () {
       initialize(dbClient)
-      return dbClient.connect()
+      await dbClient.connect()
+      emitter.emit("connected")
     },
     close () {
       connectionLogger("Closing PostgreSQL notification listener.")

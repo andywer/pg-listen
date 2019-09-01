@@ -76,6 +76,10 @@ For details see [dist/index.d.ts](./dist/index.d.ts).
 
 ## Error & event handling
 
+#### `instance.events.on("connected", listener: () => void)`
+
+The `connected` event is emitted once after initially establishing the connection and later once after every successful reconnect. Reconnects happen automatically when `pg-listen` detects that the connection closed or became unresponsive.
+
 #### `instance.events.on("error", listener: (error: Error) => void)`
 
 An `error` event is emitted for fatal errors that affect the notification subscription. A standard way of handling those kinds of errors would be to `console.error()`-log the error and terminate the process with a non-zero exit code.
