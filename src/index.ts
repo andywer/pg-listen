@@ -26,6 +26,7 @@ export interface PgParsedNotification {
 }
 
 interface PgListenEvents {
+  connected: () => void,
   error: (error: Error) => void,
   notification: (notification: PgParsedNotification) => void,
   reconnect: (attempt: number) => void
@@ -78,7 +79,7 @@ export interface Options {
   serialize?: (data: any) => string
 }
 
-function connect (connectionConfig: pg.ClientConfig | undefined, options: Options) {
+function connect(connectionConfig: pg.ClientConfig | undefined, emitter: TypedEventEmitter<PgListenEvents>, options: Options) {
   connectionLogger("Creating PostgreSQL client for notification streaming")
 
   const { retryInterval = 500, retryLimit = Infinity, retryTimeout = 3000 } = options
@@ -86,6 +87,8 @@ function connect (connectionConfig: pg.ClientConfig | undefined, options: Option
 
   const Client = options.native && pg.native ? pg.native.Client : pg.Client
   const dbClient = new Client(effectiveConnectionConfig)
+
+  dbClient.once("connect", () => emitter.emit("connected"))
 
   const reconnect = async (onAttempt: (attempt: number) => void): Promise<pg.Client> => {
     connectionLogger("Reconnecting to PostgreSQL for notification streaming")
@@ -107,6 +110,7 @@ function connect (connectionConfig: pg.ClientConfig | undefined, options: Option
           connecting
         ])
         connectionLogger("PostgreSQL reconnection succeeded")
+        emitter.emit("connected")
         return newClient
       } catch (error) {
         connectionLogger("PostgreSQL reconnection attempt failed:", error)
@@ -203,7 +207,7 @@ function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: 
     notificationsEmitter.emit(notification.channel, notification.payload)
   })
 
-  const { dbClient: initialDBClient, reconnect } = connect(connectionConfig, options)
+  const { dbClient: initialDBClient, reconnect } = connect(connectionConfig, emitter, options)
 
   let closing = false
   let dbClient = initialDBClient
