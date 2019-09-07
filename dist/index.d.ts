@@ -11,9 +11,9 @@ interface PgListenEvents {
     notification: (notification: PgParsedNotification) => void;
     reconnect: (attempt: number) => void;
 }
-interface NotificationEvents {
-    [channelName: string]: (payload: any) => void;
-}
+declare type EventsToEmitterHandlers<Events extends Record<string, any>> = {
+    [channelName in keyof Events]: (payload: Events[channelName]) => void;
+};
 export interface Options {
     /**
      * Using native PG client? Defaults to false.
@@ -50,19 +50,24 @@ export interface Options {
      */
     serialize?: (data: any) => string;
 }
-export interface Subscriber {
+export interface Subscriber<Events extends Record<string, any> = {
+    [channel: string]: any;
+}> {
     /** Emits events: "error", "notification" & "redirect" */
     events: TypedEventEmitter<PgListenEvents>;
     /** For convenience: Subscribe to distinct notifications here, event name = channel name */
-    notifications: TypedEventEmitter<NotificationEvents>;
+    notifications: TypedEventEmitter<EventsToEmitterHandlers<Events>>;
     /** Don't forget to call this asyncronous method before doing your thing */
     connect(): Promise<void>;
     close(): Promise<void>;
     getSubscribedChannels(): string[];
     listenTo(channelName: string): Promise<pg.QueryResult> | undefined;
-    notify(channelName: string, payload?: any): Promise<pg.QueryResult>;
+    notify<EventName extends keyof Events>(channelName: any extends Events[EventName] ? EventName : void extends Events[EventName] ? never : EventName, payload: Events[EventName] extends void ? never : Events[EventName]): Promise<pg.QueryResult>;
+    notify<EventName extends keyof Events>(channelName: void extends Events[EventName] ? EventName : never): Promise<pg.QueryResult>;
     unlisten(channelName: string): Promise<pg.QueryResult> | undefined;
     unlistenAll(): Promise<pg.QueryResult>;
 }
-declare function createPostgresSubscriber(connectionConfig?: pg.ClientConfig, options?: Options): Subscriber;
+declare function createPostgresSubscriber<Events extends Record<string, any> = {
+    [channel: string]: any;
+}>(connectionConfig?: pg.ClientConfig, options?: Options): Subscriber<Events>;
 export default createPostgresSubscriber;
