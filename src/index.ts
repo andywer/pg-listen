@@ -32,8 +32,8 @@ interface PgListenEvents {
   reconnect: (attempt: number) => void
 }
 
-interface NotificationEvents {
-  [channelName: string]: (payload: any) => void
+type EventsToEmitterHandlers<Events extends Record<string, any>> = {
+  [channelName in keyof Events]: (payload: Events[channelName]) => void
 }
 
 export interface Options {
@@ -176,25 +176,31 @@ function scheduleParanoidChecking (dbClient: pg.Client, intervalTime: number, re
   }
 }
 
-export interface Subscriber<Notifications extends NotificationEvents> {
+export interface Subscriber<Events extends Record<string, any> = { [channel: string]: any }> {
     /** Emits events: "error", "notification" & "redirect" */
     events: TypedEventEmitter<PgListenEvents>;
     /** For convenience: Subscribe to distinct notifications here, event name = channel name */
-    notifications: TypedEventEmitter<Notifications>;
+    notifications: TypedEventEmitter<EventsToEmitterHandlers<Events>>;
     /** Don't forget to call this asyncronous method before doing your thing */
     connect(): Promise<void>;
     close(): Promise<void>;
     getSubscribedChannels(): string[];
     listenTo(channelName: string): Promise<pg.QueryResult> | undefined;
-    notify(channelName: string, payload?: any): Promise<pg.QueryResult>;
+    notify<EventName extends keyof Events>(
+      channelName: any extends Events[EventName] ? EventName : void extends Events[EventName] ? never : EventName,
+      payload: Events[EventName] extends void ? never : Events[EventName]
+    ): Promise<pg.QueryResult>;
+    notify<EventName extends keyof Events>(
+      channelName: void extends Events[EventName] ? EventName : never
+    ): Promise<pg.QueryResult>;
     unlisten(channelName: string): Promise<pg.QueryResult> | undefined;
     unlistenAll(): Promise<pg.QueryResult>;
 }
 
-function createPostgresSubscriber<Notifications extends NotificationEvents> (
+function createPostgresSubscriber<Events extends Record<string, any> = { [channel: string]: any }> (
   connectionConfig?: pg.ClientConfig,
   options: Options = {}
-): Subscriber<Notifications> {
+): Subscriber<Events> {
   const {
     paranoidChecking = 30000,
     parse = JSON.parse,
@@ -204,7 +210,7 @@ function createPostgresSubscriber<Notifications extends NotificationEvents> (
   const emitter = new EventEmitter() as TypedEventEmitter<PgListenEvents>
   emitter.setMaxListeners(0)    // unlimited listeners
 
-  const notificationsEmitter = new EventEmitter() as TypedEventEmitter<Notifications>
+  const notificationsEmitter = new EventEmitter() as TypedEventEmitter<EventsToEmitterHandlers<Events>>
   notificationsEmitter.setMaxListeners(0)   // unlimited listeners
 
   emitter.on("notification", (notification: PgParsedNotification) => {

@@ -16,11 +16,18 @@ test("can connect", async t => {
 })
 
 test("can listen and notify", async t => {
+  type ChannelEvents = {
+    test: {
+      hello: string
+    },
+    test2: string
+  }
+
   let connectedEvents = 0
   const notifications: PgParsedNotification[] = []
   const receivedPayloads: any[] = []
 
-  const hub = createPostgresSubscriber({ connectionString: "postgres://postgres:postgres@localhost:5432/postgres" })
+  const hub = createPostgresSubscriber<ChannelEvents>({ connectionString: "postgres://postgres:postgres@localhost:5432/postgres" })
 
   hub.events.on("connected", () => connectedEvents++)
   hub.events.on("notification", (notification: PgParsedNotification) => notifications.push(notification))
