@@ -128,7 +128,11 @@ function connect(connectionConfig: pg.ClientConfig | undefined, emitter: TypedEv
   }
 }
 
-function forwardDBNotificationEvents (dbClient: pg.Client, emitter: TypedEventEmitter<PgListenEvents>, parse: (stringifiedData: string) => any) {
+function forwardDBNotificationEvents (
+  dbClient: pg.Client,
+  emitter: TypedEventEmitter<PgListenEvents>,
+  parse: (stringifiedData: string) => any
+) {
   const onNotification = (notification: PgNotification) => {
     notificationLogger(`Received PostgreSQL notification on "${notification.channel}":`, notification.payload)
 
@@ -172,11 +176,11 @@ function scheduleParanoidChecking (dbClient: pg.Client, intervalTime: number, re
   }
 }
 
-export interface Subscriber {
+export interface Subscriber<Notifications extends NotificationEvents> {
     /** Emits events: "error", "notification" & "redirect" */
     events: TypedEventEmitter<PgListenEvents>;
     /** For convenience: Subscribe to distinct notifications here, event name = channel name */
-    notifications: TypedEventEmitter<NotificationEvents>;
+    notifications: TypedEventEmitter<Notifications>;
     /** Don't forget to call this asyncronous method before doing your thing */
     connect(): Promise<void>;
     close(): Promise<void>;
@@ -187,7 +191,10 @@ export interface Subscriber {
     unlistenAll(): Promise<pg.QueryResult>;
 }
 
-function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: Options = {}): Subscriber {
+function createPostgresSubscriber<Notifications extends NotificationEvents> (
+  connectionConfig?: pg.ClientConfig,
+  options: Options = {}
+): Subscriber<Notifications> {
   const {
     paranoidChecking = 30000,
     parse = JSON.parse,
@@ -197,11 +204,11 @@ function createPostgresSubscriber (connectionConfig?: pg.ClientConfig, options: 
   const emitter = new EventEmitter() as TypedEventEmitter<PgListenEvents>
   emitter.setMaxListeners(0)    // unlimited listeners
 
-  const notificationsEmitter = new EventEmitter() as TypedEventEmitter<NotificationEvents>
+  const notificationsEmitter = new EventEmitter() as TypedEventEmitter<Notifications>
   notificationsEmitter.setMaxListeners(0)   // unlimited listeners
 
   emitter.on("notification", (notification: PgParsedNotification) => {
-    notificationsEmitter.emit(notification.channel, notification.payload)
+    notificationsEmitter.emit<any>(notification.channel, notification.payload)
   })
 
   const { dbClient: initialDBClient, reconnect } = connect(connectionConfig, emitter, options)
