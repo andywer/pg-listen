@@ -6,17 +6,15 @@ PostgreSQL can act as a message broker: Send notifications with arbitrary payloa
 
 Works with node.js 8+ and plain JavaScript or TypeScript 3. Uses the Postgres [`NOTIFY`](https://www.postgresql.org/docs/10/static/sql-notify.html) statement and subscribes to notifications using [`LISTEN`](https://www.postgresql.org/docs/10/static/sql-listen.html).
 
-### Features
+📡&nbsp;&nbsp;Send and subscribe to messages
 
-&nbsp;&nbsp;&nbsp;&nbsp;📡&nbsp;&nbsp;Send and subscribe to messages
+⏳&nbsp;&nbsp;Continuous connection health checks
 
-&nbsp;&nbsp;&nbsp;&nbsp;⏳&nbsp;&nbsp;Continuous connection health checks
+♻️&nbsp;&nbsp;Reconnects automatically
 
-&nbsp;&nbsp;&nbsp;&nbsp;♻️&nbsp;&nbsp;Reconnects automatically
+❗️&nbsp;&nbsp;Proper error handling
 
-&nbsp;&nbsp;&nbsp;&nbsp;❗️&nbsp;&nbsp;Proper error handling
-
-&nbsp;&nbsp;&nbsp;&nbsp;👌&nbsp;&nbsp;Type-safe API
+👌&nbsp;&nbsp;Type-safe API
 
 ---
 
