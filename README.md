@@ -10,6 +10,8 @@
   </a>
 </p>
 
+<br />
+
 PostgreSQL can act as a message broker: Send notifications with arbitrary payloads from one database client to others.
 
 Works with node.js 8+ and plain JavaScript or TypeScript 3. Uses the Postgres [`NOTIFY`](https://www.postgresql.org/docs/10/static/sql-notify.html) statement and subscribes to notifications using [`LISTEN`](https://www.postgresql.org/docs/10/static/sql-listen.html).
