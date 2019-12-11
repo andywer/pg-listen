@@ -1,6 +1,14 @@
-# pg-listen - Postgres LISTEN & NOTIFY that works
+<h1 align="center">pg-listen</h1>
+<h3 align="center">Postgres LISTEN & NOTIFY that works</h3>
 
-[![Build Status](https://travis-ci.org/andywer/pg-listen.svg?branch=master)](https://travis-ci.org/andywer/pg-listen) [![NPM Version](https://img.shields.io/npm/v/pg-listen.svg)](https://www.npmjs.com/package/pg-listen)
+<p align="center">
+  <a href="https://travis-ci.org/andywer/pg-listen">
+    <img alt="Build Status" src="https://travis-ci.org/andywer/pg-listen.svg?branch=master" />
+  </a>
+  <a href="https://www.npmjs.com/package/pg-listen">
+    <img alt="NPM Version" src="https://img.shields.io/npm/v/pg-listen.svg" />
+  </a>
+</p>
 
 PostgreSQL can act as a message broker: Send notifications with arbitrary payloads from one database client to others.
 
