@@ -27,6 +27,7 @@ export interface PgParsedNotification {
 
 interface PgListenEvents {
   connected: () => void,
+  disconnected: () => void,
   error: (error: Error) => void,
   notification: (notification: PgParsedNotification) => void,
   reconnect: (attempt: number) => void
@@ -234,12 +235,14 @@ function createPostgresSubscriber<Events extends Record<string, any> = { [channe
     dbClient.on("error", (error: any) => {
       if (!reinitializingRightNow) {
         connectionLogger("DB Client error:", error)
+        emitter.emit('error', error)
         reinitialize()
       }
     })
     dbClient.on("end", () => {
       if (!reinitializingRightNow) {
         connectionLogger("DB Client connection ended")
+        emitter.emit('disconnected')
         reinitialize()
       }
     })
