@@ -235,7 +235,6 @@ function createPostgresSubscriber<Events extends Record<string, any> = { [channe
     dbClient.on("error", (error: any) => {
       if (!reinitializingRightNow) {
         connectionLogger("DB Client error:", error)
-        emitter.emit('error', error)
         reinitialize()
       }
     })
