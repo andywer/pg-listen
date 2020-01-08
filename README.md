@@ -115,7 +115,7 @@ The convenient way of subscribing to notifications. Don't forget to call `.liste
 
 In one sentence: Because none of the existing packages was working reliably in production.
 
-Using the `NOTIFY` and `LISTEN` features is not trivial using [`node-postgres` (`pg`)](https://www.npmjs.com/package/pg), since you cannot use connection pools and even distinct client connections also tend to time out.
+Using the `NOTIFY` and `LISTEN` features is not trivial using [`node-postgres` (`pg`)](https://www.npmjs.com/package/pg) directly, since you cannot use connection pools and even distinct client connections also tend to time out.
 
 There are already a few packages out there, like `pg-pubsub`, but neither of them seems to work reliably. Errors are being swallowed, the code is hard to reason about, there is no type-safety, ...
 
