@@ -71,7 +71,7 @@ export async function connect () {
 }
 
 export async function sendSampleMessage () {
-  await subscriber.notify({
+  await subscriber.notify("my-channel", {
     greeting: "Hey, buddy.",
     timestamp: Date.now()
   })
