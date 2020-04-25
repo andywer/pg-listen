@@ -22,7 +22,7 @@
     "events"
   ],
   "peerDependencies": {
-    "pg": "7.x"
+    "pg": "7.x || 8.x"
   },
   "dependencies": {
     "debug": "^4.1.1",
