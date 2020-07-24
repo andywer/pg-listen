@@ -51,9 +51,10 @@ export interface Options {
 
   /**
    * How much time to wait between reconnection attempts (if failed).
+   * Can also be a callback returning a delay in milliseconds.
    * Defaults to 500 ms.
    */
-  retryInterval?: number
+  retryInterval?: number | ((attempt: number) => number)
 
   /**
    * How many attempts to reconnect after connection loss.
@@ -87,6 +88,7 @@ function connect(connectionConfig: pg.ClientConfig | undefined, emitter: TypedEv
 
   const Client = options.native && pg.native ? pg.native.Client : pg.Client
   const dbClient = new Client(effectiveConnectionConfig)
+  const getRetryInterval = typeof retryInterval === "function" ? retryInterval : () => retryInterval
 
   const reconnect = async (onAttempt: (attempt: number) => void): Promise<pg.Client> => {
     connectionLogger("Reconnecting to PostgreSQL for notification streaming")
@@ -111,7 +113,7 @@ function connect(connectionConfig: pg.ClientConfig | undefined, emitter: TypedEv
         return newClient
       } catch (error) {
         connectionLogger("PostgreSQL reconnection attempt failed:", error)
-        await delay(retryInterval)
+        await delay(getRetryInterval(attempt - 1))
 
         if (retryTimeout && (Date.now() - startTime) > retryTimeout) {
           throw new Error(`Stopping PostgreSQL reconnection attempts after ${retryTimeout}ms timeout has been reached.`)
