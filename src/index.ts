@@ -269,7 +269,10 @@ function createPostgresSubscriber<Events extends Record<string, any> = { [channe
       dbClient = await reconnect(attempt => emitter.emit("reconnect", attempt))
       initialize(dbClient)
 
-      subscriptionLogger(`Re-subscribing to channels: ${subscribedChannels.join(", ")}`)
+      if (subscriptionLogger.enabled) {
+        subscriptionLogger(`Re-subscribing to channels: ${subscribedChannels.join(", ")}`)
+      }
+
       await Promise.all(subscribedChannels.map(
         channelName => dbClient.query(`LISTEN ${format.ident(channelName)}`)
       ))
