@@ -27,9 +27,10 @@ export interface Options {
     paranoidChecking?: number | false;
     /**
      * How much time to wait between reconnection attempts (if failed).
+     * Can also be a callback returning a delay in milliseconds.
      * Defaults to 500 ms.
      */
-    retryInterval?: number;
+    retryInterval?: number | ((attempt: number) => number);
     /**
      * How many attempts to reconnect after connection loss.
      * Defaults to no limit, but a default retryTimeout is set.
