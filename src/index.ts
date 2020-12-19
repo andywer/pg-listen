@@ -224,7 +224,7 @@ function createPostgresSubscriber<Events extends Record<string, any> = { [channe
   let closing = false
   let dbClient = initialDBClient
   let reinitializingRightNow = false
-  let subscribedChannels: string[] = []
+  let subscribedChannels: Set<string> = new Set()
 
   let cancelEventForwarding: () => void = () => undefined
   let cancelParanoidChecking: () => void = () => undefined
@@ -269,11 +269,13 @@ function createPostgresSubscriber<Events extends Record<string, any> = { [channe
       dbClient = await reconnect(attempt => emitter.emit("reconnect", attempt))
       initialize(dbClient)
 
+      const subscribedChannelsArray = Array.from(subscribedChannels)
+
       if (subscriptionLogger.enabled) {
-        subscriptionLogger(`Re-subscribing to channels: ${subscribedChannels.join(", ")}`)
+        subscriptionLogger(`Re-subscribing to channels: ${subscribedChannelsArray.join(", ")}`)
       }
 
-      await Promise.all(subscribedChannels.map(
+      await Promise.all(subscribedChannelsArray.map(
         channelName => dbClient.query(`LISTEN ${format.ident(channelName)}`)
       ))
 
@@ -309,15 +311,15 @@ function createPostgresSubscriber<Events extends Record<string, any> = { [channe
       return dbClient.end()
     },
     getSubscribedChannels () {
-      return subscribedChannels
+      return Array.from(subscribedChannels)
     },
     listenTo (channelName: string) {
-      if (subscribedChannels.indexOf(channelName) > -1) {
+      if (subscribedChannels.has(channelName)) {
         return
       }
       subscriptionLogger(`Subscribing to PostgreSQL notification "${channelName}"`)
 
-      subscribedChannels = [ ...subscribedChannels, channelName ]
+      subscribedChannels.add(channelName)
       return dbClient.query(`LISTEN ${format.ident(channelName)}`)
     },
     notify (channelName: string, payload?: any) {
@@ -331,18 +333,18 @@ function createPostgresSubscriber<Events extends Record<string, any> = { [channe
       }
     },
     unlisten (channelName: string) {
-      if (subscribedChannels.indexOf(channelName) === -1) {
+      if (!subscribedChannels.has(channelName)) {
         return
       }
       subscriptionLogger(`Unsubscribing from PostgreSQL notification "${channelName}"`)
 
-      subscribedChannels = subscribedChannels.filter(someChannel => someChannel !== channelName)
+      subscribedChannels.delete(channelName)
       return dbClient.query(`UNLISTEN ${format.ident(channelName)}`)
     },
     unlistenAll () {
       subscriptionLogger("Unsubscribing from all PostgreSQL notifications.")
 
-      subscribedChannels = []
+      subscribedChannels = new Set()
       return dbClient.query(`UNLISTEN *`)
     }
   }
