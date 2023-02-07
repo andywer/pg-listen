@@ -1,6 +1,6 @@
 {
   "name": "pg-listen",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "license": "MIT",
   "description": "PostgreSQL LISTEN &  NOTIFY that finally works.",
   "author": "Andy Wermke (https://github.com/andywer)",
@@ -27,7 +27,7 @@
   "dependencies": {
     "debug": "^4.1.1",
     "pg-format": "^1.0.4",
-    "typed-emitter": "^0.1.0"
+    "typed-emitter": "^1.0.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.2",
