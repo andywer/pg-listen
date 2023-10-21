@@ -41,6 +41,8 @@ npm install pg-listen
 yarn add pg-listen
 ```
 
+**Note:** If pg is already contained in the dependency tree, the existing dependency will be used as peer dependency. If pg is not present in the dependency tree, pg must be installed manually via ```npm install pg``` or ```yarn install pg```
+
 
 ## Usage
 
