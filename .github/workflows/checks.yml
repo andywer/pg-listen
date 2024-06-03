@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci
+      - run: npm ci -f
       - run: npm run lint:check
       - run: npm run format:check
   test:
@@ -26,13 +26,13 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci
+      - run: npm ci -f
       - run: npm run test
         timeout-minutes: 3
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci
+      - run: npm ci -f
       - run: npm run build
         timeout-minutes: 5

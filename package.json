@@ -12,7 +12,6 @@
     "build": "rm -rf dist && tsc",
     "test": "vitest run --poolOptions.threads.singleThread",
     "test:database": "docker run -e POSTGRES_DB=postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 --rm postgres:15-alpine",
-    "prepare": "npm run build",
     "lint": "eslint --fix .",
     "lint:check": "eslint .",
     "format": "prettier --write .",
