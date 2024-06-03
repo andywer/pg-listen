@@ -2,9 +2,6 @@
 <h3 align="center">Postgres LISTEN & NOTIFY that works</h3>
 
 <p align="center">
-  <a href="https://travis-ci.org/andywer/pg-listen">
-    <img alt="Build Status" src="https://travis-ci.org/andywer/pg-listen.svg?branch=master" />
-  </a>
   <a href="https://www.npmjs.com/package/pg-listen">
     <img alt="NPM Version" src="https://img.shields.io/npm/v/pg-listen.svg" />
   </a>
@@ -30,7 +27,6 @@ Works with node.js 8+ and plain JavaScript or TypeScript 3. Uses the Postgres [`
 
 ---
 
-
 ## Installation
 
 ```sh
@@ -41,48 +37,45 @@ npm install pg-listen
 yarn add pg-listen
 ```
 
-
 ## Usage
 
 ```js
-import createSubscriber from "pg-listen"
-import { databaseURL } from "./config"
+import { createSubscriber } from 'pg-listen';
+import { databaseURL } from './config';
 
 // Accepts the same connection config object that the "pg" package would take
-const subscriber = createSubscriber({ connectionString: databaseURL })
+const subscriber = createSubscriber({ connectionString: databaseURL });
 
-subscriber.notifications.on("my-channel", (payload) => {
+subscriber.notifications.on('my-channel', (payload) => {
   // Payload as passed to subscriber.notify() (see below)
-  console.log("Received notification in 'my-channel':", payload)
-})
+  console.log("Received notification in 'my-channel':", payload);
+});
 
-subscriber.events.on("error", (error) => {
-  console.error("Fatal database connection error:", error)
-  process.exit(1)
-})
+subscriber.events.on('error', (error) => {
+  console.error('Fatal database connection error:', error);
+  process.exit(1);
+});
 
-process.on("exit", () => {
-  subscriber.close()
-})
+process.on('exit', () => {
+  subscriber.close();
+});
 
-export async function connect () {
-  await subscriber.connect()
-  await subscriber.listenTo("my-channel")
+export async function connect() {
+  await subscriber.connect();
+  await subscriber.listenTo('my-channel');
 }
 
-export async function sendSampleMessage () {
-  await subscriber.notify("my-channel", {
-    greeting: "Hey, buddy.",
-    timestamp: Date.now()
-  })
+export async function sendSampleMessage() {
+  await subscriber.notify('my-channel', {
+    greeting: 'Hey, buddy.',
+    timestamp: Date.now(),
+  });
 }
 ```
-
 
 ## API
 
 For details see [dist/index.d.ts](./dist/index.d.ts).
-
 
 ## Error & event handling
 
@@ -110,7 +103,6 @@ Emitted when a connection issue has been detected and an attempt to re-connect t
 
 The convenient way of subscribing to notifications. Don't forget to call `.listenTo(channelName)` to subscribe the Postgres client to this channel in order to receive notifications.
 
-
 ## Why another package?
 
 In one sentence: Because none of the existing packages was working reliably in production.
@@ -121,11 +113,9 @@ There are already a few packages out there, like `pg-pubsub`, but neither of the
 
 This package aims to fix those shortcomings. Postgres LISTEN & NOTIFY in node that finally works.
 
-
 ## Debugging
 
 Set the `DEBUG` environment variable to `pg-listen:*` to enable debug logging.
-
 
 ## License
 
