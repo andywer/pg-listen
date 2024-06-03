@@ -1,19 +1,6 @@
-import TypedEventEmitter from "typed-emitter";
-import pg = require("pg");
-export interface PgParsedNotification {
-    processId: number;
-    channel: string;
-    payload?: any;
-}
-interface PgListenEvents {
-    connected: () => void;
-    error: (error: Error) => void;
-    notification: (notification: PgParsedNotification) => void;
-    reconnect: (attempt: number) => void;
-}
-declare type EventsToEmitterHandlers<Events extends Record<string, any>> = {
-    [channelName in keyof Events]: (payload: Events[channelName]) => void;
-};
+/// <reference types="node" resolution-mode="require"/>
+import { EventEmitter } from 'node:events';
+import pg from 'pg';
 export interface Options {
     /**
      * Using native PG client? Defaults to false.
@@ -44,31 +31,25 @@ export interface Options {
      * Custom function to control how the payload data is stringified on `.notify()`.
      * Use together with the `serialize` option. Defaults to `JSON.parse`.
      */
-    parse?: (serialized: string) => any;
+    parse?: (serialized: string) => unknown;
     /**
      * Custom function to control how the payload data is stringified on `.notify()`.
      * Use together with the `parse` option. Defaults to `JSON.stringify`.
      */
-    serialize?: (data: any) => string;
+    serialize?: (data: unknown) => string;
 }
-export interface Subscriber<Events extends Record<string, any> = {
-    [channel: string]: any;
-}> {
+export interface Subscriber {
     /** Emits events: "error", "notification" & "redirect" */
-    events: TypedEventEmitter<PgListenEvents>;
+    events: EventEmitter;
     /** For convenience: Subscribe to distinct notifications here, event name = channel name */
-    notifications: TypedEventEmitter<EventsToEmitterHandlers<Events>>;
-    /** Don't forget to call this asyncronous method before doing your thing */
+    notifications: EventEmitter;
+    /** Don't forget to await this before doing anything with the Subscriber */
     connect(): Promise<void>;
     close(): Promise<void>;
     getSubscribedChannels(): string[];
     listenTo(channelName: string): Promise<pg.QueryResult> | undefined;
-    notify<EventName extends keyof Events>(channelName: any extends Events[EventName] ? EventName : void extends Events[EventName] ? never : EventName, payload: Events[EventName] extends void ? never : Events[EventName]): Promise<pg.QueryResult>;
-    notify<EventName extends keyof Events>(channelName: void extends Events[EventName] ? EventName : never): Promise<pg.QueryResult>;
+    notify(channelName: string, payload?: unknown): Promise<pg.QueryResult>;
     unlisten(channelName: string): Promise<pg.QueryResult> | undefined;
     unlistenAll(): Promise<pg.QueryResult>;
 }
-declare function createPostgresSubscriber<Events extends Record<string, any> = {
-    [channel: string]: any;
-}>(connectionConfig?: pg.ClientConfig, options?: Options): Subscriber<Events>;
-export default createPostgresSubscriber;
+export declare const createSubscriber: (connectionConfig?: pg.ClientConfig, options?: Options) => Subscriber;

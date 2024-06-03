@@ -1,16 +1,15 @@
 {
   "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "target": "es5",
-    "module": "commonjs",
-    "lib": ["es2015"],
     "outDir": "dist",
     "declaration": true,
     "strict": true
   },
-  "include": [
-    "./src/index.ts"
-  ]
+  "include": ["./src/index.ts"]
 }

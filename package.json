@@ -1,18 +1,23 @@
 {
   "name": "pg-listen",
-  "version": "1.7.0",
+  "version": "2.0.0",
   "license": "MIT",
+  "type": "module",
   "description": "PostgreSQL LISTEN &  NOTIFY that finally works.",
   "author": "Andy Wermke (https://github.com/andywer)",
   "repository": "github:andywer/pg-listen",
   "main": "./index.js",
   "typings": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "test": "ava test/*.test.ts",
-    "test:database": "docker run -e POSTGRES_DB=postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 --rm postgres:10.4-alpine",
-    "posttest": "tslint --project .",
-    "prepare": "npm run build"
+    "build": "rm -rf dist && tsc",
+    "test": "vitest run --poolOptions.threads.singleThread",
+    "test:database": "docker run -e POSTGRES_DB=postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 --rm postgres:15-alpine",
+    "prepare": "npm run build",
+    "lint": "eslint --fix .",
+    "lint:check": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit --p tsconfig.test.json"
   },
   "keywords": [
     "postgres",
@@ -22,45 +27,31 @@
     "events"
   ],
   "peerDependencies": {
-    "pg": "7.x || 8.x"
+    "pg": "8.x"
   },
   "dependencies": {
-    "debug": "^4.1.1",
-    "pg-format": "^1.0.4",
-    "typed-emitter": "^0.1.0"
+    "debug": "^4.3.5",
+    "pg-format": "^1.0.4"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.2",
-    "@types/node": "^10.14.1",
-    "@types/pg": "^7.4.13",
-    "@types/pg-format": "^1.0.0",
-    "ava": "^1.4.1",
-    "lint-staged": "^13.0.4",
-    "pg": "^8.0.3",
-    "prettier": "^1.16.4",
-    "ts-node": "^8.0.3",
-    "tslint": "^5.14.0",
-    "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.3.3333"
+    "@eslint/js": "^9.4.0",
+    "@types/debug": "^4.1.12",
+    "@types/node": "^20.14.0",
+    "@types/pg": "^8.11.6",
+    "@types/pg-format": "^1.0.5",
+    "eslint": "^9.4.0",
+    "globals": "^15.3.0",
+    "lint-staged": "^15.2.5",
+    "pg": "^8.11.5",
+    "prettier": "^3.3.0",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^7.11.0",
+    "vitest": "^1.6.0"
   },
   "files": [
     "dist/**",
     "index.js"
   ],
-  "ava": {
-    "compileEnhancements": false,
-    "extensions": [
-      "ts"
-    ],
-    "require": [
-      "ts-node/register"
-    ],
-    "serial": true
-  },
-  "prettier": {
-    "semi": false,
-    "printWidth": 100
-  },
   "lint-staged": {
     "*": [
       "prettier --write",
